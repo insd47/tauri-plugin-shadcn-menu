@@ -68,8 +68,8 @@ pub fn build_and_popup<R: Runtime>(
         let frame: objc2_foundation::NSRect = msg_send![content_view, frame];
         let location = objc2_foundation::NSPoint::new(x, frame.size.height - y);
 
-        // Temporarily elevate window level so the popup menu appears above kiosk windows
         let original_level: isize = msg_send![ns_window_ptr, level];
+        let has_custom_level = level.is_some();
         if let Some(level) = level {
             let _: () = msg_send![ns_window_ptr, setLevel: level as isize];
         }
@@ -77,23 +77,35 @@ pub fn build_and_popup<R: Runtime>(
         // Clear any previous click state
         CLICKED_ID.with(|cell| *cell.borrow_mut() = None);
 
-        // popUpMenu is blocking — runs a modal event loop until dismissed
-        let _: () = msg_send![
-            &menu,
-            popUpMenuPositioningItem: std::ptr::null::<AnyObject>(),
-            atLocation: location,
-            inView: content_view
-        ];
+        // Clone app handle for use in the dispatch block
+        let app_clone = app.clone();
 
-        // Restore original window level
-        if level.is_some() {
-            let _: () = msg_send![ns_window_ptr, setLevel: original_level];
+        // Dispatch popup to main queue asynchronously so the Tauri command handler
+        // can return first and release its mutex, avoiding deadlock.
+        let block = block2::StackBlock::new(move || {
+            let _delegate_ref = &delegate; // prevent delegate from being dropped
+            let _: () = msg_send![
+                &menu,
+                popUpMenuPositioningItem: std::ptr::null::<AnyObject>(),
+                atLocation: location,
+                inView: content_view
+            ];
+
+            if has_custom_level {
+                let _: () = msg_send![ns_window_ptr, setLevel: original_level];
+            }
+
+            if let Some(id) = CLICKED_ID.with(|cell| cell.borrow_mut().take()) {
+                let _ = app_clone.emit("shadcn-menu:click", id);
+            }
+        });
+
+        extern "C" {
+            fn dispatch_async(queue: *mut AnyObject, block: &block2::Block<dyn Fn()>);
+            fn dispatch_get_main_queue() -> *mut AnyObject;
         }
 
-        // Emit event with the clicked item's ID (set during the modal loop)
-        if let Some(id) = CLICKED_ID.with(|cell| cell.borrow_mut().take()) {
-            let _ = app.emit("shadcn-menu:click", id);
-        }
+        dispatch_async(dispatch_get_main_queue(), &block);
     }
 
     Ok(())
