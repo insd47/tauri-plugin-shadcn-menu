@@ -1,0 +1,32 @@
+[package]
+name = "tauri-plugin-shadcn-menu"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.77.2"
+description = "Native context menu & dropdown menu for Tauri v2 — NSMenu on macOS, shadcn/ui on other platforms"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/insd47/tauri-plugin-shadcn-menu"
+links = "tauri-plugin-shadcn-menu"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu", "x86_64-apple-darwin", "x86_64-pc-windows-msvc"]
+
+[package.metadata.platforms.support]
+windows = { level = "partial", notes = "Falls back to web-based shadcn/ui context menu" }
+linux = { level = "partial", notes = "Falls back to web-based shadcn/ui context menu" }
+macos = { level = "full", notes = "Uses native NSMenu with SF Symbols" }
+
+[lib]
+name = "tauri_plugin_shadcn_menu"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2" }
+thiserror = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", features = ["NSString"] }
+
+[build-dependencies]
+tauri-plugin = { version = "2", features = ["build"] }

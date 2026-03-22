@@ -1,0 +1,3 @@
+[default]
+description = "Allows showing native context menus"
+permissions = ["allow-show-context-menu"]
