@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { once } from '@tauri-apps/api/event';
-import type { MenuEntry } from './types';
+import type { MenuEntry } from '../types';
 import { v4 as uuid } from 'uuid';
 import { toNativeAccelerator } from './accelerator';
 

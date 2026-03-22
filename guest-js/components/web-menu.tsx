@@ -11,7 +11,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSeparator,
   ContextMenuShortcut,
-} from './components/context-menu';
+} from './context-menu';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -23,9 +23,9 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-} from './components/dropdown-menu';
-import type { MenuEntry } from './types';
-import { formatForDisplay } from './accelerator';
+} from './dropdown-menu';
+import type { MenuEntry } from '../types';
+import { formatForDisplay } from '../lib/accelerator';
 
 function MenuIcon({ name }: { name: string }) {
   const Icon = icons[name as keyof typeof icons];

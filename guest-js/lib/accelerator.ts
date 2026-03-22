@@ -143,19 +143,18 @@ export function parseAccelerator(accelerator: string): ParsedAccelerator {
   return { modifiers, key };
 }
 
-function isCmdOrCtrl(accelerator: string): boolean {
+export function isCmdOrCtrl(accelerator: string): boolean {
   return accelerator
     .split('+')
     .some((s) => CMD_OR_CTRL_ALIASES.has(s.trim().toUpperCase()));
 }
 
-export function formatForDisplay(accelerator: string, isMac: boolean): string {
+export function getDisplayParts(accelerator: string, isMac: boolean): string[] {
   const hasCmdOrCtrl = isCmdOrCtrl(accelerator);
   const parsed = parseAccelerator(accelerator);
   const parts: string[] = [];
 
   if (isMac) {
-    // macOS: use symbols, order: ⌃⌥⇧⌘
     if (parsed.modifiers.ctrl && !hasCmdOrCtrl) parts.push(MAC_MODIFIER_SYMBOLS.ctrl);
     if (parsed.modifiers.alt) parts.push(MAC_MODIFIER_SYMBOLS.alt);
     if (parsed.modifiers.shift) parts.push(MAC_MODIFIER_SYMBOLS.shift);
@@ -163,21 +162,38 @@ export function formatForDisplay(accelerator: string, isMac: boolean): string {
     else if (parsed.modifiers.meta) parts.push(MAC_MODIFIER_SYMBOLS.meta);
 
     const upperKey = parsed.key.toUpperCase();
-    const displayKey = MAC_KEY_MAP[upperKey] ?? parsed.key.toUpperCase();
-    parts.push(displayKey);
-    return parts.join('');
+    parts.push(MAC_KEY_MAP[upperKey] ?? parsed.key.toUpperCase());
+    return parts;
   }
 
-  // Windows/Linux: use text
   if (parsed.modifiers.ctrl || hasCmdOrCtrl) parts.push('Ctrl');
   if (parsed.modifiers.alt) parts.push('Alt');
   if (parsed.modifiers.shift) parts.push('Shift');
   if (parsed.modifiers.meta && !hasCmdOrCtrl) parts.push('Win');
 
   const upperKey = parsed.key.toUpperCase();
-  const displayKey = DISPLAY_KEY_MAP[upperKey] ?? parsed.key.toUpperCase();
-  parts.push(displayKey);
-  return parts.join('+');
+  parts.push(DISPLAY_KEY_MAP[upperKey] ?? parsed.key.toUpperCase());
+  return parts;
+}
+
+export function formatForDisplay(accelerator: string, isMac: boolean): string {
+  const parts = getDisplayParts(accelerator, isMac);
+  return isMac ? parts.join('') : parts.join('+');
+}
+
+const KEY_TO_EVENT_KEY: Record<string, string> = {
+  ESC: 'Escape',
+  RETURN: 'Enter',
+  UP: 'ArrowUp',
+  DOWN: 'ArrowDown',
+  LEFT: 'ArrowLeft',
+  RIGHT: 'ArrowRight',
+  SPACE: ' ',
+  PLUS: '+',
+};
+
+export function toEventKey(key: string): string {
+  return KEY_TO_EVENT_KEY[key.toUpperCase()] ?? key;
 }
 
 // NSEventModifierFlags values

@@ -4,9 +4,9 @@ import { type MouseEvent, type ReactNode, useCallback, useMemo } from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { platform } from '@tauri-apps/plugin-os';
 import type { MenuEntry } from './types';
-import { filterByPlatform } from './filter';
-import { showNativeMenu } from './native';
-import { WebContextMenu, WebDropdownMenu } from './web';
+import { filterByPlatform } from './lib/filter';
+import { showNativeMenu } from './lib/native';
+import { WebContextMenu, WebDropdownMenu } from './components/web-menu';
 
 export type { MenuEntry } from './types';
 export type {
@@ -64,7 +64,10 @@ export function NativeDropdownMenu({ menu, level, children }: NativeMenuProps) {
   return <WebDropdownMenu menu={filtered}>{children}</WebDropdownMenu>;
 }
 
-export { showNativeMenu } from './native';
-export { filterByPlatform } from './filter';
-export { formatForDisplay, toNativeAccelerator, parseAccelerator } from './accelerator';
-export type { ParsedAccelerator, NativeAccelerator } from './accelerator';
+export { showNativeMenu } from './lib/native';
+export { filterByPlatform } from './lib/filter';
+export { formatForDisplay, toNativeAccelerator, parseAccelerator, getDisplayParts, isCmdOrCtrl, toEventKey } from './lib/accelerator';
+export type { ParsedAccelerator, NativeAccelerator } from './lib/accelerator';
+export { useAccelerator } from './hooks/use-accelerator';
+export { Accelerator } from './components/accelerator';
+export { Kbd, KbdGroup } from './components/kbd';

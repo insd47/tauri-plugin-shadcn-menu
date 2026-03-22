@@ -1,5 +1,5 @@
 import type { Platform } from '@tauri-apps/plugin-os';
-import type { MenuEntry } from './types';
+import type { MenuEntry } from '../types';
 
 export function filterByPlatform(entries: MenuEntry[], current: Platform): MenuEntry[] {
   return entries.reduce<MenuEntry[]>((acc, entry) => {
