@@ -58,7 +58,10 @@ pub fn build_and_popup<R: Runtime>(
     level: Option<i32>,
 ) -> Result<()> {
     unsafe {
-        let menu = build_ns_menu(entries)?;
+        // Create a single delegate instance that lives for the duration of the popup
+        let delegate_cls = delegate_class();
+        let delegate: Retained<AnyObject> = msg_send![delegate_cls, new];
+        let menu = build_ns_menu(entries, &delegate)?;
         let ns_window = window.ns_window()?;
         let ns_window_ptr = ns_window as *mut AnyObject;
         let content_view: *mut AnyObject = msg_send![ns_window_ptr, contentView];
@@ -96,19 +99,19 @@ pub fn build_and_popup<R: Runtime>(
     Ok(())
 }
 
-unsafe fn build_ns_menu(entries: &[MenuEntry]) -> Result<Retained<AnyObject>> {
+unsafe fn build_ns_menu(entries: &[MenuEntry], delegate: &AnyObject) -> Result<Retained<AnyObject>> {
     let menu: Retained<AnyObject> = msg_send![class!(NSMenu), new];
     let _: () = msg_send![&menu, setAutoenablesItems: false];
 
     for entry in entries {
-        let item = build_ns_menu_item(entry)?;
+        let item = build_ns_menu_item(entry, delegate)?;
         let _: () = msg_send![&menu, addItem: &*item];
     }
 
     Ok(menu)
 }
 
-unsafe fn build_ns_menu_item(entry: &MenuEntry) -> Result<Retained<AnyObject>> {
+unsafe fn build_ns_menu_item(entry: &MenuEntry, delegate: &AnyObject) -> Result<Retained<AnyObject>> {
     match entry {
         MenuEntry::Separator => {
             let item: Retained<AnyObject> = msg_send![class!(NSMenuItem), separatorItem];
@@ -118,7 +121,7 @@ unsafe fn build_ns_menu_item(entry: &MenuEntry) -> Result<Retained<AnyObject>> {
             let ns_item = create_ns_menu_item(&item.label, !item.disabled)?;
             apply_sf_symbol(&ns_item, item.sf_symbol.as_deref());
             apply_key_equivalent(&ns_item, item.key_equivalent.as_deref());
-            set_item_callback(&ns_item, &item.id);
+            set_item_callback(&ns_item, &item.id, delegate);
             Ok(ns_item)
         }
         MenuEntry::Checkbox(item) => {
@@ -127,13 +130,13 @@ unsafe fn build_ns_menu_item(entry: &MenuEntry) -> Result<Retained<AnyObject>> {
             let _: () = msg_send![&ns_item, setState: state];
             apply_sf_symbol(&ns_item, item.sf_symbol.as_deref());
             apply_key_equivalent(&ns_item, item.key_equivalent.as_deref());
-            set_item_callback(&ns_item, &item.id);
+            set_item_callback(&ns_item, &item.id, delegate);
             Ok(ns_item)
         }
         MenuEntry::Submenu(item) => {
             let ns_item = create_ns_menu_item(&item.label, !item.disabled)?;
             apply_sf_symbol(&ns_item, item.sf_symbol.as_deref());
-            let submenu = build_ns_menu(&item.children)?;
+            let submenu = build_ns_menu(&item.children, delegate)?;
             let _: () = msg_send![&ns_item, setSubmenu: &*submenu];
             Ok(ns_item)
         }
@@ -171,15 +174,11 @@ unsafe fn create_ns_menu_item(label: &str, enabled: bool) -> Result<Retained<Any
     Ok(ns_item)
 }
 
-unsafe fn set_item_callback(ns_item: &AnyObject, id: &str) {
+unsafe fn set_item_callback(ns_item: &AnyObject, id: &str, delegate: &AnyObject) {
     let id_str = NSString::from_str(id);
     let _: () = msg_send![ns_item, setRepresentedObject: &*id_str];
 
     let action = sel!(menuItemClicked:);
     let _: () = msg_send![ns_item, setAction: action];
-
-    // Create delegate instance as target
-    let delegate_cls = delegate_class();
-    let delegate: Retained<AnyObject> = msg_send![delegate_cls, new];
-    let _: () = msg_send![ns_item, setTarget: &*delegate];
+    let _: () = msg_send![ns_item, setTarget: delegate];
 }
