@@ -101,11 +101,11 @@ pub fn build_and_popup<R: Runtime>(
         });
 
         extern "C" {
-            fn dispatch_async(queue: *mut AnyObject, block: &block2::Block<dyn Fn()>);
-            fn dispatch_get_main_queue() -> *mut AnyObject;
+            fn dispatch_async(queue: *const std::ffi::c_void, block: &block2::Block<dyn Fn()>);
+            static _dispatch_main_q: std::ffi::c_void;
         }
 
-        dispatch_async(dispatch_get_main_queue(), &block);
+        dispatch_async(&_dispatch_main_q, &block);
     }
 
     Ok(())
