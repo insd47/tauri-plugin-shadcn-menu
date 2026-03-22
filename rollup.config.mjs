@@ -1,4 +1,5 @@
 import typescript from '@rollup/plugin-typescript';
+import dts from 'rollup-plugin-dts';
 
 const external = [
   'react',
@@ -43,8 +44,18 @@ export default [
       typescript({
         tsconfig: './tsconfig.json',
         declaration: false,
+        declarationDir: null,
       }),
     ],
+    external,
+  },
+  {
+    input: 'dist-js/index.d.ts',
+    output: {
+      file: 'dist-js/index.d.ts',
+      format: 'es',
+    },
+    plugins: [dts()],
     external,
   },
 ];

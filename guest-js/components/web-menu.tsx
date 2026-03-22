@@ -83,6 +83,13 @@ interface WebMenuProps {
   isMac?: boolean;
 }
 
+interface WebDropdownMenuProps extends WebMenuProps {
+  side?: 'top' | 'right' | 'bottom' | 'left';
+  sideOffset?: number;
+  align?: 'start' | 'center' | 'end';
+  alignOffset?: number;
+}
+
 export function WebContextMenu({ menu, children, isMac = false }: WebMenuProps) {
   const renderEntry = createContextRenderer(isMac);
   return (
@@ -136,12 +143,22 @@ function createDropdownRenderer(isMac: boolean) {
   };
 }
 
-export function WebDropdownMenu({ menu, children, isMac = false }: WebMenuProps) {
+export function WebDropdownMenu({
+  menu,
+  children,
+  isMac = false,
+  side,
+  sideOffset,
+  align,
+  alignOffset,
+}: WebDropdownMenuProps) {
   const renderDropdownEntry = createDropdownRenderer(isMac);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent>{menu.map(renderDropdownEntry)}</DropdownMenuContent>
+      <DropdownMenuContent side={side} sideOffset={sideOffset} align={align} alignOffset={alignOffset}>
+        {menu.map(renderDropdownEntry)}
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 }

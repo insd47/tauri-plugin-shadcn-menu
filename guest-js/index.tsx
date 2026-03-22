@@ -23,6 +23,13 @@ interface NativeMenuProps {
   children: ReactNode;
 }
 
+interface NativeDropdownMenuProps extends NativeMenuProps {
+  side?: 'top' | 'right' | 'bottom' | 'left';
+  sideOffset?: number;
+  align?: 'start' | 'center' | 'end';
+  alignOffset?: number;
+}
+
 export function NativeContextMenu({ menu, level, children }: NativeMenuProps) {
   const current = platform();
   const filtered = useMemo(() => filterByPlatform(menu, current), [menu, current]);
@@ -42,7 +49,15 @@ export function NativeContextMenu({ menu, level, children }: NativeMenuProps) {
   return <WebContextMenu menu={filtered}>{children}</WebContextMenu>;
 }
 
-export function NativeDropdownMenu({ menu, level, children }: NativeMenuProps) {
+export function NativeDropdownMenu({
+  menu,
+  level,
+  children,
+  side = 'bottom',
+  sideOffset = 0,
+  align = 'center',
+  alignOffset = 0,
+}: NativeDropdownMenuProps) {
   const current = platform();
   const filtered = useMemo(() => filterByPlatform(menu, current), [menu, current]);
 
@@ -61,7 +76,17 @@ export function NativeDropdownMenu({ menu, level, children }: NativeMenuProps) {
     return <Slot onClick={handleClick}>{children}</Slot>;
   }
 
-  return <WebDropdownMenu menu={filtered}>{children}</WebDropdownMenu>;
+  return (
+    <WebDropdownMenu
+      menu={filtered}
+      side={side}
+      sideOffset={sideOffset}
+      align={align}
+      alignOffset={alignOffset}
+    >
+      {children}
+    </WebDropdownMenu>
+  );
 }
 
 export { showNativeMenu } from './lib/native';

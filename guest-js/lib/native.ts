@@ -81,11 +81,12 @@ export async function showNativeMenu(
   const actionMap = new Map<string, () => void>();
   const serialized = serializeEntries(entries, actionMap);
 
-  const unlisten = await once<string>('shadcn-menu:click', (event) => {
-    const action = actionMap.get(event.payload);
-    action?.();
+  void once<string>('shadcn-menu:click', (event) => {
+    if (event.payload) {
+      const action = actionMap.get(event.payload);
+      action?.();
+    }
   });
 
   await invoke('plugin:shadcn-menu|show_context_menu', { entries: serialized, x, y, level });
-  unlisten();
 }

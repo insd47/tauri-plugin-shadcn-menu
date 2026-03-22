@@ -95,9 +95,8 @@ pub fn build_and_popup<R: Runtime>(
                 let _: () = msg_send![ns_window_ptr, setLevel: original_level];
             }
 
-            if let Some(id) = CLICKED_ID.with(|cell| cell.borrow_mut().take()) {
-                let _ = app_clone.emit("shadcn-menu:click", id);
-            }
+            let id = CLICKED_ID.with(|cell| cell.borrow_mut().take()).unwrap_or_default();
+            let _ = app_clone.emit("shadcn-menu:click", id);
         });
 
         extern "C" {

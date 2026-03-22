@@ -34,7 +34,7 @@ function AcceleratorInline({ value, isMac, className }: { value: string; isMac: 
   const text = useMemo(() => formatForDisplay(value, isMac), [value, isMac]);
 
   return (
-    <kbd className={className ?? "text-muted-foreground text-xs"}>
+    <kbd className={className ?? "font-sans text-xs font-medium text-muted-foreground"}>
       {text}
     </kbd>
   );
