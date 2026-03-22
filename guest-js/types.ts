@@ -11,8 +11,7 @@ export interface MenuActionItem extends MenuItemBase {
   label: string;
   icon?: keyof typeof icons;
   sfSymbol?: string;
-  shortcut?: string;
-  keyEquivalent?: string;
+  accelerator?: string;
   action?: () => void;
 }
 
@@ -21,8 +20,7 @@ export interface MenuCheckboxItem extends MenuItemBase {
   label: string;
   icon?: keyof typeof icons;
   sfSymbol?: string;
-  shortcut?: string;
-  keyEquivalent?: string;
+  accelerator?: string;
   checked: boolean;
   action?: (checked: boolean) => void;
 }

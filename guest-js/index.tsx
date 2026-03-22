@@ -66,3 +66,5 @@ export function NativeDropdownMenu({ menu, level, children }: NativeMenuProps) {
 
 export { showNativeMenu } from './native';
 export { filterByPlatform } from './filter';
+export { formatForDisplay, toNativeAccelerator, parseAccelerator } from './accelerator';
+export type { ParsedAccelerator, NativeAccelerator } from './accelerator';

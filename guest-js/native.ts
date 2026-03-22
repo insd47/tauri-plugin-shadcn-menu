@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { once } from '@tauri-apps/api/event';
 import type { MenuEntry } from './types';
 import { v4 as uuid } from 'uuid';
+import { toNativeAccelerator } from './accelerator';
 
 interface SerializedEntry {
   type: string;
@@ -9,6 +10,7 @@ interface SerializedEntry {
   label?: string;
   sfSymbol?: string;
   keyEquivalent?: string;
+  modifierMask?: number;
   disabled?: boolean;
   checked?: boolean;
   children?: SerializedEntry[];
@@ -34,6 +36,7 @@ function serializeEntries(
     }
 
     const id = uuid();
+    const accel = entry.accelerator ? toNativeAccelerator(entry.accelerator) : undefined;
 
     if (entry.type === 'checkbox') {
       if (entry.action) {
@@ -46,7 +49,8 @@ function serializeEntries(
         id,
         label: entry.label,
         sfSymbol: entry.sfSymbol,
-        keyEquivalent: entry.keyEquivalent,
+        keyEquivalent: accel?.keyEquivalent,
+        modifierMask: accel?.modifierMask,
         disabled: entry.disabled,
         checked: entry.checked,
       };
@@ -61,7 +65,8 @@ function serializeEntries(
       id,
       label: entry.label,
       sfSymbol: entry.sfSymbol,
-      keyEquivalent: entry.keyEquivalent,
+      keyEquivalent: accel?.keyEquivalent,
+      modifierMask: accel?.modifierMask,
       disabled: entry.disabled,
     };
   });

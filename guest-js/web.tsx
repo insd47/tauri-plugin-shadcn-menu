@@ -25,6 +25,7 @@ import {
   DropdownMenuShortcut,
 } from './components/dropdown-menu';
 import type { MenuEntry } from './types';
+import { formatForDisplay } from './accelerator';
 
 function MenuIcon({ name }: { name: string }) {
   const Icon = icons[name as keyof typeof icons];
@@ -32,54 +33,58 @@ function MenuIcon({ name }: { name: string }) {
   return <Icon />;
 }
 
-function renderEntry(entry: MenuEntry, index: number): ReactNode {
-  if (entry.type === 'separator') {
-    return <ContextMenuSeparator key={index} />;
-  }
+function createContextRenderer(isMac: boolean) {
+  return function renderEntry(entry: MenuEntry, index: number): ReactNode {
+    if (entry.type === 'separator') {
+      return <ContextMenuSeparator key={index} />;
+    }
 
-  if (entry.type === 'submenu') {
-    return (
-      <ContextMenuSub key={index}>
-        <ContextMenuSubTrigger disabled={entry.disabled}>
+    if (entry.type === 'submenu') {
+      return (
+        <ContextMenuSub key={index}>
+          <ContextMenuSubTrigger disabled={entry.disabled}>
+            {entry.icon && <MenuIcon name={entry.icon} />}
+            {entry.label}
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent>{entry.children.map(renderEntry)}</ContextMenuSubContent>
+        </ContextMenuSub>
+      );
+    }
+
+    if (entry.type === 'checkbox') {
+      return (
+        <ContextMenuCheckboxItem
+          key={index}
+          checked={entry.checked}
+          disabled={entry.disabled}
+          onCheckedChange={(checked) => entry.action?.(checked)}
+        >
           {entry.icon && <MenuIcon name={entry.icon} />}
           {entry.label}
-        </ContextMenuSubTrigger>
-        <ContextMenuSubContent>{entry.children.map(renderEntry)}</ContextMenuSubContent>
-      </ContextMenuSub>
-    );
-  }
+          {entry.accelerator && <ContextMenuShortcut>{formatForDisplay(entry.accelerator, isMac)}</ContextMenuShortcut>}
+        </ContextMenuCheckboxItem>
+      );
+    }
 
-  if (entry.type === 'checkbox') {
+    // Default: action item
     return (
-      <ContextMenuCheckboxItem
-        key={index}
-        checked={entry.checked}
-        disabled={entry.disabled}
-        onCheckedChange={(checked) => entry.action?.(checked)}
-      >
+      <ContextMenuItem key={index} disabled={entry.disabled} onSelect={() => entry.action?.()}>
         {entry.icon && <MenuIcon name={entry.icon} />}
         {entry.label}
-        {entry.shortcut && <ContextMenuShortcut>{entry.shortcut}</ContextMenuShortcut>}
-      </ContextMenuCheckboxItem>
+        {entry.accelerator && <ContextMenuShortcut>{formatForDisplay(entry.accelerator, isMac)}</ContextMenuShortcut>}
+      </ContextMenuItem>
     );
-  }
-
-  // Default: action item
-  return (
-    <ContextMenuItem key={index} disabled={entry.disabled} onSelect={() => entry.action?.()}>
-      {entry.icon && <MenuIcon name={entry.icon} />}
-      {entry.label}
-      {entry.shortcut && <ContextMenuShortcut>{entry.shortcut}</ContextMenuShortcut>}
-    </ContextMenuItem>
-  );
+  };
 }
 
 interface WebMenuProps {
   menu: MenuEntry[];
   children: ReactNode;
+  isMac?: boolean;
 }
 
-export function WebContextMenu({ menu, children }: WebMenuProps) {
+export function WebContextMenu({ menu, children, isMac = false }: WebMenuProps) {
+  const renderEntry = createContextRenderer(isMac);
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
@@ -88,48 +93,51 @@ export function WebContextMenu({ menu, children }: WebMenuProps) {
   );
 }
 
-function renderDropdownEntry(entry: MenuEntry, index: number): ReactNode {
-  if (entry.type === 'separator') {
-    return <DropdownMenuSeparator key={index} />;
-  }
+function createDropdownRenderer(isMac: boolean) {
+  return function renderDropdownEntry(entry: MenuEntry, index: number): ReactNode {
+    if (entry.type === 'separator') {
+      return <DropdownMenuSeparator key={index} />;
+    }
 
-  if (entry.type === 'submenu') {
-    return (
-      <DropdownMenuSub key={index}>
-        <DropdownMenuSubTrigger disabled={entry.disabled}>
+    if (entry.type === 'submenu') {
+      return (
+        <DropdownMenuSub key={index}>
+          <DropdownMenuSubTrigger disabled={entry.disabled}>
+            {entry.icon && <MenuIcon name={entry.icon} />}
+            {entry.label}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>{entry.children.map(renderDropdownEntry)}</DropdownMenuSubContent>
+        </DropdownMenuSub>
+      );
+    }
+
+    if (entry.type === 'checkbox') {
+      return (
+        <DropdownMenuCheckboxItem
+          key={index}
+          checked={entry.checked}
+          disabled={entry.disabled}
+          onCheckedChange={(checked) => entry.action?.(checked)}
+        >
           {entry.icon && <MenuIcon name={entry.icon} />}
           {entry.label}
-        </DropdownMenuSubTrigger>
-        <DropdownMenuSubContent>{entry.children.map(renderDropdownEntry)}</DropdownMenuSubContent>
-      </DropdownMenuSub>
-    );
-  }
+          {entry.accelerator && <DropdownMenuShortcut>{formatForDisplay(entry.accelerator, isMac)}</DropdownMenuShortcut>}
+        </DropdownMenuCheckboxItem>
+      );
+    }
 
-  if (entry.type === 'checkbox') {
     return (
-      <DropdownMenuCheckboxItem
-        key={index}
-        checked={entry.checked}
-        disabled={entry.disabled}
-        onCheckedChange={(checked) => entry.action?.(checked)}
-      >
+      <DropdownMenuItem key={index} disabled={entry.disabled} onSelect={() => entry.action?.()}>
         {entry.icon && <MenuIcon name={entry.icon} />}
         {entry.label}
-        {entry.shortcut && <DropdownMenuShortcut>{entry.shortcut}</DropdownMenuShortcut>}
-      </DropdownMenuCheckboxItem>
+        {entry.accelerator && <DropdownMenuShortcut>{formatForDisplay(entry.accelerator, isMac)}</DropdownMenuShortcut>}
+      </DropdownMenuItem>
     );
-  }
-
-  return (
-    <DropdownMenuItem key={index} disabled={entry.disabled} onSelect={() => entry.action?.()}>
-      {entry.icon && <MenuIcon name={entry.icon} />}
-      {entry.label}
-      {entry.shortcut && <DropdownMenuShortcut>{entry.shortcut}</DropdownMenuShortcut>}
-    </DropdownMenuItem>
-  );
+  };
 }
 
-export function WebDropdownMenu({ menu, children }: WebMenuProps) {
+export function WebDropdownMenu({ menu, children, isMac = false }: WebMenuProps) {
+  const renderDropdownEntry = createDropdownRenderer(isMac);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>

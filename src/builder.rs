@@ -132,7 +132,7 @@ unsafe fn build_ns_menu_item(entry: &MenuEntry, delegate: &AnyObject) -> Result<
         MenuEntry::Item(item) => {
             let ns_item = create_ns_menu_item(&item.label, !item.disabled)?;
             apply_sf_symbol(&ns_item, item.sf_symbol.as_deref());
-            apply_key_equivalent(&ns_item, item.key_equivalent.as_deref());
+            apply_key_equivalent(&ns_item, item.key_equivalent.as_deref(), item.modifier_mask);
             set_item_callback(&ns_item, &item.id, delegate);
             Ok(ns_item)
         }
@@ -141,7 +141,7 @@ unsafe fn build_ns_menu_item(entry: &MenuEntry, delegate: &AnyObject) -> Result<
             let state: isize = if item.checked { 1 } else { 0 };
             let _: () = msg_send![&ns_item, setState: state];
             apply_sf_symbol(&ns_item, item.sf_symbol.as_deref());
-            apply_key_equivalent(&ns_item, item.key_equivalent.as_deref());
+            apply_key_equivalent(&ns_item, item.key_equivalent.as_deref(), item.modifier_mask);
             set_item_callback(&ns_item, &item.id, delegate);
             Ok(ns_item)
         }
@@ -161,10 +161,13 @@ unsafe fn apply_sf_symbol(ns_item: &AnyObject, sf_symbol: Option<&str>) {
     }
 }
 
-unsafe fn apply_key_equivalent(ns_item: &AnyObject, key: Option<&str>) {
+unsafe fn apply_key_equivalent(ns_item: &AnyObject, key: Option<&str>, modifier_mask: Option<u64>) {
     if let Some(key) = key {
         let key_str = NSString::from_str(key);
         let _: () = msg_send![ns_item, setKeyEquivalent: &*key_str];
+        if let Some(mask) = modifier_mask {
+            let _: () = msg_send![ns_item, setKeyEquivalentModifierMask: mask];
+        }
     }
 }
 

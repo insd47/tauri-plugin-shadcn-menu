@@ -20,6 +20,8 @@ pub struct MenuActionItem {
     #[serde(default)]
     pub key_equivalent: Option<String>,
     #[serde(default)]
+    pub modifier_mask: Option<u64>,
+    #[serde(default)]
     pub disabled: bool,
 }
 
@@ -32,6 +34,8 @@ pub struct MenuCheckboxItem {
     pub sf_symbol: Option<String>,
     #[serde(default)]
     pub key_equivalent: Option<String>,
+    #[serde(default)]
+    pub modifier_mask: Option<u64>,
     #[serde(default)]
     pub disabled: bool,
     #[serde(default)]

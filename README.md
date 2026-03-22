@@ -86,8 +86,7 @@ const menu: MenuEntry[] = [
     label: '복사',
     icon: 'Copy',           // lucide-react 아이콘 키 (웹 폴백용)
     sfSymbol: 'doc.on.doc', // SF Symbol 이름 (macOS 네이티브용)
-    shortcut: '⌘C',         // 표시용 단축키 (웹 폴백용)
-    keyEquivalent: 'c',     // NSMenuItem keyEquivalent (macOS 네이티브용)
+    accelerator: 'CmdOrCtrl+C', // 단축키 (Tauri accelerator 형식)
     action: () => navigator.clipboard.writeText('...'),
   },
   { type: 'separator' },
@@ -171,8 +170,7 @@ interface MenuActionItem {
   label: string;
   icon?: string;           // lucide-react 아이콘 키
   sfSymbol?: string;        // macOS SF Symbol 이름
-  shortcut?: string;        // 표시용 단축키
-  keyEquivalent?: string;   // macOS keyEquivalent
+  accelerator?: string;     // 단축키 (Tauri accelerator 형식)
   disabled?: boolean;
   platform?: Platform | Platform[];
   action?: () => void;
@@ -185,8 +183,7 @@ interface MenuCheckboxItem {
   checked: boolean;
   icon?: string;
   sfSymbol?: string;
-  shortcut?: string;
-  keyEquivalent?: string;
+  accelerator?: string;     // 단축키 (Tauri accelerator 형식)
   disabled?: boolean;
   platform?: Platform | Platform[];
   action?: (checked: boolean) => void;
@@ -209,6 +206,31 @@ interface MenuSeparator {
   platform?: Platform | Platform[];
 }
 ```
+
+## Accelerator 형식
+
+`accelerator` 속성은 [Tauri의 accelerator 형식](https://v2.tauri.app/ko/learn/window-menu/)을 따릅니다. 수식키와 키를 `+`로 연결합니다.
+
+### 수식키
+
+| 수식키 | 설명 |
+| --- | --- |
+| `CmdOrCtrl` | macOS에서는 ⌘, Windows/Linux에서는 Ctrl |
+| `Cmd` / `Command` / `Super` | macOS ⌘ (Command) |
+| `Ctrl` / `Control` | Control |
+| `Shift` | Shift |
+| `Alt` / `Option` | macOS ⌥ (Option) / Windows Alt |
+
+### 사용 예시
+
+```tsx
+accelerator: 'CmdOrCtrl+C'       // macOS: ⌘C, Windows: Ctrl+C
+accelerator: 'CmdOrCtrl+Shift+Z' // macOS: ⇧⌘Z, Windows: Ctrl+Shift+Z
+accelerator: 'Alt+Enter'          // macOS: ⌥↩, Windows: Alt+↵
+accelerator: 'F5'                 // F5
+```
+
+macOS 네이티브 메뉴에서는 실제 키보드 단축키로 동작하며, Windows/Linux 웹 폴백에서는 플랫폼에 맞는 표시 문자열로 렌더링됩니다.
 
 ## 라이선스
 
